@@ -1,5 +1,7 @@
 import scalaz.concurrent.Task
-import doobie.imports._, scalaz._, Scalaz._
+import doobie.imports._
+import scalaz._
+import Scalaz._
 import shapeless._
 
 package http4s.techempower.persist {
@@ -19,8 +21,9 @@ package http4s.techempower.persist {
       def fortunes: Task[Stream[Fortune]] = {
         sql"select id, message from Fortune"
           .query[Fortune]
-          .stream
+          .list
           .transact(transactor)
+          .map(_.toStream)
       }
     }
   }

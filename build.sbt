@@ -9,15 +9,20 @@ resolvers ++= Seq(
   "Scalaz Bintray Repo" at "http://dl.bintray.com/scalaz/releases"
 )
 
+lazy val doobieversion = "0.2.2-SNAPSHOT" //publish-local from shapeless 2.2.0 branch; this is needed to not break stuff
+
+lazy val http4sversion = "0.7.0"
+
 libraryDependencies ++= Seq(
-"org.http4s" %% "http4s-dsl"          % "0.7.0", 
-"org.http4s" %% "http4s-blazeserver"  % "0.7.0", 
-"org.http4s" %% "http4s-json4s" % "0.7.0",     
-"org.http4s" %% "http4s-argonaut" % "0.7.0",   
-"org.http4s" %% "http4s-twirl" % "0.7.0",      
-"org.tpolecat" %% "doobie-core" % "0.2.1",
-"io.argonaut" %% "argonaut" % "6.1-M6",
-"org.slf4j" % "slf4j-simple" % "1.7.7"
+"org.http4s"   %% "http4s-dsl"                % http4sversion, 
+"org.http4s"   %% "http4s-blazeserver"        % http4sversion, 
+"org.http4s"   %% "http4s-json4s"             % http4sversion,     
+"org.http4s"   %% "http4s-argonaut"           % http4sversion,   
+"org.http4s"   %% "http4s-twirl"              % http4sversion,      
+"org.tpolecat" %% "doobie-core"               % doobieversion,
+"org.tpolecat" %% "doobie-contrib-postgresql" % doobieversion,
+"io.argonaut"  %% "argonaut"                  % "6.1-M6",
+"org.slf4j"     % "slf4j-simple"              % "1.7.7"
 )
 
 Revolver.settings
