@@ -10,7 +10,7 @@ package http4s.techempower.persist {
   object DoobieQueries {
 
     def forTransactor(transactor: Transactor[Task]) = new DbQueries {
-      //case class World(id: Int, randomNumber: Int)
+
       def single(id: Int): Task[World] = {
         sql"select id, randomNumber from World where id = $id"
           .query[World]

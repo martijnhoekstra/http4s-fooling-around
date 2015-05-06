@@ -49,20 +49,18 @@ package http4s.techempower {
       ???
     }
 
+    def toIntOption(str: String) = {
+      import scala.util.control.Exception._
+      catching(classOf[NumberFormatException]) opt str.toInt
+    }
+
     val techempowerservice = HttpService {
       case GET -> Root / "json" => Ok(ReturnMessage("Hello, World!"))
       case GET -> Root / "db" => Ok(randomWorld)
       case GET -> Root / "queries" :? params => {
-        import scala.util.control.Exception._
-        val count = params.get("queries") match {
-          case Some(vals) if !vals.isEmpty => {
-            val frist = vals.head
-            catching(classOf[NumberFormatException]) opt frist.toInt match {
-              case Some(i) if i >= 500 => 500
-              case Some(i) if i >= 1 => i
-              case _ => 1
-            }
-          }
+        val count = params.get("queries").flatMap(vals => vals.headOption.flatMap(head => toIntOption(head))) match {
+          case Some(i) if i > 500 => 500
+          case Some(i) if i > 1 => i
           case _ => 1
         }
         Ok(randomWorlds(count))
