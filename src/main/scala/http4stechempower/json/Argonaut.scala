@@ -8,15 +8,10 @@ import Argonaut._
 
 package http4s.techempower.json {
 
-  object ArgonautEncoder extends JsonApi {
-
+  object ArgonautEncoder {
     implicit def messageEncoding: EncodeJson[ReturnMessage] = jencode1L((m: ReturnMessage) => (m.message))("message")
     implicit def worldEncoding: EncodeJson[World] = jencode2L((w: World) => (w.id, w.randomNumber))("id", "message")
 
-    implicit def messageEncoder: EntityEncoder[ReturnMessage] = jsonEncoderOf[ReturnMessage]
-    implicit def worldEncoder: EntityEncoder[World] = jsonEncoderOf[World]
-    implicit def worldlistEncoder: ListEncoder[World] = jsonEncoderOf[List[World]]
-    implicit def worldstreamEncode = jsonEncoderOf[Stream[World]]
-
+    implicit def jsonEncoder[A](implicit ev: EncodeJson[A]): EntityEncoder[A] = jsonEncoderOf[A]
   }
 }

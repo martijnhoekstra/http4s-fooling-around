@@ -15,15 +15,17 @@ package http4s.techempower {
 
   object TechEmpowerServer extends App {
     import ArgonautEncoder._
-    import DummyQueries._
     import org.http4s.twirl._
+
+    val backend: DbQueries = DummyQueries
+    //backend = DoobieQueries.forTransactor(sometransactor)
 
     val rand = new scala.util.Random()
 
     def fullfortunes = {
-      val newfortune = Fortune(0, "fortune added at runtime")
-      fortunes.map(fetched => {
-        val all = (newfortune #:: fetched)
+      val newfortune = Fortune(0, "Additional fortune added at request time.")
+      backend.fortunes.map(fetched => {
+        val all = (newfortune :: fetched)
         val sorted = all.sortBy(_.message)
         //Note on sorting: The requirement reads: "The list of Fortune objects must be sorted by the order of the message field."
         //no collation is supplied, so just go for the easiest possibility. This uses String.compareTo() which 
@@ -35,7 +37,7 @@ package http4s.techempower {
 
     def randomWorld: Task[World] = {
       val randomid = rand.nextInt(10000) + 1
-      single(randomid)
+      backend.single(randomid)
     }
 
     def randomWorlds(count: Int): Task[Stream[World]] = {
@@ -45,8 +47,8 @@ package http4s.techempower {
       Traverse[Stream].sequence(tasks)
     }
 
-    def doupdates: Task[Stream[World]] = {
-      ???
+    def doupdates(worlds: Task[Stream[World]]): Task[Stream[World]] = {
+      worlds.flatMap(ws => backend.updates(ws))
     }
 
     def toIntOption(str: String) = {
@@ -66,7 +68,16 @@ package http4s.techempower {
         Ok(randomWorlds(count))
       }
       case GET -> Root / "fortunes" => Ok(fullfortunes)
-      case GET -> Root / "updates" => Ok(doupdates)
+      case GET -> Root / "updates" :? params => {
+        val count = params.get("queries").flatMap(vals => vals.headOption.flatMap(head => toIntOption(head))) match {
+          case Some(i) if i > 500 => 500
+          case Some(i) if i > 1 => i
+          case _ => 1
+        }
+        val tworlds = randomWorlds(count)
+        val updated_worlds = tworlds.map(_.map(_.copy(randomNumber = rand.nextInt(10000) + 1)))
+        Ok(doupdates(updated_worlds))
+      }
       case GET -> Root / "plaintext" => Ok("Hello, World")
     }
 
